@@ -36,6 +36,7 @@ gem 'jbuilder', '~> 2.0'
 gem 'faker'
 gem 'will_paginate'
 gem 'bootstrap-will_paginate'
+gem 'rspec-its'
 
 # => gem 'rake', '~> 11.2', '>= 11.2.2'
 # bundle exec rake doc:rails generates the API under doc/api.
