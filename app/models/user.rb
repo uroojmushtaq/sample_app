@@ -1,5 +1,19 @@
 class User < ActiveRecord::Base
 	has_many :microposts, dependent: :destroy
+	
+	has_many :relationships, foreign_key: "follower_id", dependent: :destroy #associate u_id with fk follower id, 
+	#and has following of this(follower_id)
+    has_many :followed_users, through: :relationships, source: :followed #use the above association relationship 
+    #and go to the user table and gets the desired users based on the followed id. {User.where(id: rel.map(&:id))}
+
+    
+
+    has_many :reverse_relationships, foreign_key: "followed_id",
+	                                   class_name:  "Relationship",
+	                                   dependent:   :destroy
+ 	has_many :followers, through: :reverse_relationships, source: :follower
+
+
 	before_save { self.email = email.downcase }
 	before_create :create_remember_token
 	validates :name, presence: true, length: { maximum: 50}
@@ -20,8 +34,19 @@ class User < ActiveRecord::Base
   	end
 
   	def feed
-    # This is preliminary. See "Following users" for the full implementation.
-	    Micropost.where("user_id = ?", id)
+	    Micropost.from_users_followed_by(self)
+	end
+
+	def following?(other_user)
+	    relationships.find_by(followed_id: other_user.id)
+	 end
+
+	def follow!(other_user)
+	    relationships.create!(followed_id: other_user.id)
+	end
+
+	def unfollow!(other_user)
+	    relationships.find_by(followed_id: other_user.id).destroy
 	end
 
  	private
